@@ -3,6 +3,7 @@ import MagicButton from "./MagicButton";
 import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import GridGlobe from "./ui/GridGlobe";
 
 const Hero = () => {
   const { t, i18n } = useTranslation();
@@ -19,7 +20,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="pb-20 pt-36 relative bg-white">
+    <div className="pb-20 pt-36 relative bg-gradient-to-br from-[#000000] via-[#000000] 60% via-[#4a0012] to-[#800020]">
       <style jsx>{`
         .text-burgundy {
           color: #800020;
@@ -111,8 +112,8 @@ const Hero = () => {
           )}
         </div>
       </div>
-      <div className="h-screen w-full absolute top-0 left-0 flex items-center justify-center bg-white">
-        <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-white" />
+      <div className="h-screen w-full absolute top-0 left-0 flex items-center justify-center">
+        <div className="absolute pointer-events-none inset-0 flex items-center justify-center" />
       </div>
       <div className="flex flex-col md:flex-row justify-between items-center relative my-20 z-10 px-4 md:px-10">
         <div className="max-w-full md:max-w-2xl lg:max-w-[60vw] flex flex-col items-start justify-center">
@@ -132,13 +133,7 @@ const Hero = () => {
             />
           </a>
         </div>
-        <div className="hidden md:flex items-center justify-center tilted-image">
-          <img
-            src="/ielt.png"
-            alt="Phone with App"
-            className="max-h-[60vh] md:max-h-[80vh]"
-          />
-        </div>
+        <GridGlobe />
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ Provide appropriate response based on this context.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5',
         messages: apiMessages,
         max_tokens: 2000,
       }),

@@ -10,11 +10,11 @@ import Approach from "@/components/Approach";
 import Experience from "@/components/Experience";
 import RecentProjects from "@/components/RecentProjects";
 import { FloatingNav } from "@/components/ui/FloatingNavbar";
-import '../i18n';
+import "../i18n";
 
 const Home = () => {
   return (
-    <main className="bg-white flex justify-center items-center flex-col overflow-hidden mx-auto sm:px-10 px-5">
+    <main className="bg-gradient-to-br from-[#000000] via-[#000000] 80% via-[#4a0012] 90% to-[#800020] flex justify-center items-center flex-col overflow-hidden mx-auto sm:px-10 px-5">
       <div className="max-w-7xl w-full">
         <Hero />
         <Grid />

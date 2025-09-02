@@ -33,7 +33,7 @@ export async function POST(req) {
 
 async function analyzeSpeech(speech) {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       { role: "system", content: "You are a helpful assistant that analyzes speeches. Provide your analysis in a structured format with a detailed evaluation, score out of 100, and specific recommendations for improvement. Format your response with clear paragraph breaks and a distinct score line." },
       { role: "user", content: `Please analyze the following speech and provide a detailed evaluation, score out of 100, and specific recommendations for improvement:\n\n${speech}` }
@@ -61,7 +61,7 @@ async function analyzeSpeech(speech) {
 
 async function generateTopic() {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       { role: "system", content: "You are a helpful assistant that generates interesting speech topics." },
       { role: "user", content: "Generate an interesting and challenging topic for a speech." }

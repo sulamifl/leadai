@@ -35,7 +35,7 @@ export async function POST(req) {
 
 async function analyzeEssay(essay) {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       { role: "system", content: "You are a helpful assistant that analyzes essays. Provide your analysis in a structured format with a score out of 100, detailed feedback, and recommendations for improvement." },
       { role: "user", content: `Please analyze the following essay and provide a score out of 100, detailed feedback, and recommendations for improvement:\n\n${essay}` }
@@ -46,7 +46,7 @@ async function analyzeEssay(essay) {
 
 async function generateTopic() {
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5",
     messages: [
       { role: "system", content: "You are a helpful assistant that generates essay topics." },
       { role: "user", content: "Generate an interesting and challenging essay topic." }
