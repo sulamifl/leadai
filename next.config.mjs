@@ -1,11 +1,17 @@
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['firebasestorage.googleapis.com'],
   },
-  env: {
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  webpack: (config) => {
+    config.resolve.alias["@"] = __dirname;
+    return config;
   },
 };
 

@@ -1,9 +1,12 @@
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { IoCopyOutline } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 
-// Also install this npm i --save-dev @types/react-lottie
-import Lottie from "react-lottie";
+// react-lottie (lottie-web) обращается к document/window и не может
+// выполняться во время серверного рендеринга, поэтому загружаем его
+// динамически только на клиенте (ssr: false).
+const Lottie = dynamic(() => import("react-lottie"), { ssr: false });
 
 import { cn } from "@/lib/utils";
 

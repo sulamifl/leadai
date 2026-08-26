@@ -1,13 +1,14 @@
 {
   "hosting": {
-    "public": "app",
+    "public": ".next",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
         "source": "**",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",
-            "value": "http://localhost:3000"
+            "value": "*"
           },
           {
             "key": "Access-Control-Allow-Credentials",
@@ -18,4 +19,3 @@
     ]
   }
 }
-  
