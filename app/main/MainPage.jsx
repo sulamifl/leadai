@@ -11,6 +11,15 @@ import Image from 'next/image';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
+import ExamTimer from '../../components/ExamTimer';
+
+// Реальный тайминг секций IELTS (в секундах)
+const SECTION_DURATIONS = {
+  listening: 30 * 60, // 30 минут (+10 минут на перенос ответов)
+  reading: 60 * 60,   // 60 минут
+  writing: 60 * 60,   // 60 минут
+  speaking: 14 * 60,  // 11-14 минут (берём максимум)
+};
 
 const preparationOptions = [
   {
@@ -121,6 +130,8 @@ const Page = () => {
   const [currentSection, setCurrentSection] = useState(null);
   const [answers, setAnswers] = useState({});
   const [timedMode, setTimedMode] = useState(null);
+  // Ключ для сброса таймера при переходе между секциями
+  const [timerKey, setTimerKey] = useState(0);
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -188,11 +199,20 @@ const Page = () => {
       setCurrentSection('results');
     }
 
+    // Сбрасываем таймер при переходе к следующей секции
+    setTimerKey(prev => prev + 1);
+
     ReactGA.event({
       category: "Section Completion",
       action: "Completed Section",
       label: currentSection
     });
+  };
+
+  // Автозавершение секции по истечении времени таймера реального экзамена.
+  // Вызываем handleSectionComplete без данных — секция завершается и переходим дальше.
+  const handleTimeUp = () => {
+    handleSectionComplete({ section: currentSection, data: null });
   };
 
   const renderCards = (options, handleClick, sectionTitle) => (
@@ -230,8 +250,6 @@ const Page = () => {
         return <SpeakingSection onNext={handleSectionComplete} timedMode={timedMode} />;
       case 'results':
         return <Results answers={answers} testType={selectedTest} />;
-    case 'results':
-      return <Results answers={answers} testType={selectedTest} />;
     default:
       return null;
     }
@@ -264,8 +282,21 @@ const Page = () => {
     );
   }
 
+  // Показываем таймер реального экзамена только в режиме "Timed" и во время активной секции
+  const showExamTimer = timedMode && currentSection && currentSection !== 'results';
+  const sectionDuration = SECTION_DURATIONS[currentSection];
+
   return (
     <div style={{ backgroundColor: 'white' }}>
+      {showExamTimer && sectionDuration && (
+        <div style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '20px' }}>
+          <ExamTimer
+            key={timerKey}
+            duration={sectionDuration}
+            onTimeUp={handleTimeUp}
+          />
+        </div>
+      )}
       {renderSection()}
     </div>
   );

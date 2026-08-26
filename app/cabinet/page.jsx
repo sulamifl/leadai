@@ -37,7 +37,9 @@ const CabinetPage = () => {
 
   const tools = [
     { name: "IELTS Preparation", route: "/main" },
-    { name: "Selecting Your university", route: "/univer" }
+    { name: "Selecting Your university", route: "/univer" },
+    { name: "Test History", route: "/history" },
+    { name: "AI Practice Test", route: "/practice" }
   ];
 
   if (loading) {

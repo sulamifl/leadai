@@ -3,8 +3,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import PulseLoader from 'react-spinners/PulseLoader';
 import styled from 'styled-components';
 import { fetchResults, fetchListeningExamples, fetchSpeakingExamples, fetchReadingExamples, fetchWritingExamples, fetchUniversityRecommendations } from './chatgpt';
+import { saveTestResult } from '@/lib/resultsService';
+import { exportResultsToPDF } from '@/lib/pdfExport';
 import AIAssistant from './AIAssistant';
-import axios from 'axios';
 
 const Container = styled.div`
   padding: 20px;
@@ -162,12 +163,14 @@ const Results = ({ answers, testType }) => {
   const [writingExamples, setWritingExamples] = useState(null);
   const [universityRecommendations, setUniversityRecommendations] = useState(null);
   const [resultsLoadCount, setResultsLoadCount] = useState(0);
+  const [savedResultId, setSavedResultId] = useState(null);
 
   useEffect(() => {
   const fetchResultsLoadCount = async () => {
     try {
-      const response = await axios.get('https://leadai.netlify.app/main');
-      setResultsLoadCount(response.data.count);
+      const response = await fetch('/api/results/main');
+      const data = await response.json();
+      setResultsLoadCount(data.count);
     } catch (error) {
       console.error("Error fetching results load count:", error);
     }
@@ -231,6 +234,24 @@ const Results = ({ answers, testType }) => {
 const overallScore = roundIELTSScore(averageScore);
 setResult({ ...newResults, overallScore });
 
+      try {
+        const resultId = await saveTestResult({
+          testType,
+          overallScore,
+          sections: newResults,
+          examples: {
+            listening: listeningExamples,
+            speaking: speakingExamples,
+            reading: readingExamples,
+            writing: writingExamples,
+          },
+          universityRecommendations,
+        });
+        setSavedResultId(resultId);
+      } catch (saveError) {
+        console.error('Error saving test result:', saveError);
+      }
+
       await updateResultsLoadCount();
 
       if (testType === 'full') {
@@ -286,6 +307,39 @@ setResult({ ...newResults, overallScore });
     URL.revokeObjectURL(url);
   };
 
+  const downloadPDF = async () => {
+    try {
+      const sections = {};
+      Object.entries(result).forEach(([section, data]) => {
+        if (section !== 'overallScore') {
+          sections[section] = {
+            score: data.score,
+            feedback: data.feedback,
+          };
+        }
+      });
+
+      const examples = {};
+      if (listeningExamples) examples.listening = listeningExamples;
+      if (speakingExamples) examples.speaking = speakingExamples;
+      if (readingExamples) examples.reading = readingExamples;
+      if (writingExamples) examples.writing = writingExamples;
+
+      await exportResultsToPDF({
+        testType,
+        overallScore: result.overallScore,
+        sections,
+        examples,
+        universityRecommendations,
+        createdAt: new Date(),
+        fileName: 'IELTS_Test_Report.pdf',
+      });
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+  };
+
   const roundIELTSScore = (score) => {
     const decimalPart = score % 1;
     if (decimalPart < 0.25) return Math.floor(score);
@@ -295,8 +349,9 @@ setResult({ ...newResults, overallScore });
 
   const updateResultsLoadCount = async () => {
   try {
-    const response = await axios.post('https://leadai.netlify.app/main');
-    setResultsLoadCount(response.data.count);
+    const response = await fetch('/api/results/main', { method: 'POST' });
+    const data = await response.json();
+    setResultsLoadCount(data.count);
   } catch (error) {
     console.error("Error updating results load count:", error);
   }
@@ -512,7 +567,8 @@ const parseScore = (content, section) => {
     <AIAssistant result={result} />
     <ButtonContainer>
       <Button onClick={() => window.location.href = '/main'}>Back to Dashboard</Button>
-      <DownloadButton onClick={downloadResults}>Download Results</DownloadButton>
+      <DownloadButton onClick={downloadResults}>Download Results (.txt)</DownloadButton>
+      <DownloadButton onClick={downloadPDF}>Download PDF</DownloadButton>
     </ButtonContainer>
   </Container>
 );

@@ -10,6 +10,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import ProgressDashboard from "@/components/ProgressDashboard";
+import StudyPlan from "@/components/StudyPlan";
 
 const DashboardPage = () => {
   const [user, setUser] = useState(null);
@@ -197,6 +199,12 @@ const DashboardPage = () => {
             </div>
           </section>
         </div>
+        {user && (
+          <div className="w-full mt-16">
+            <ProgressDashboard />
+            <StudyPlan />
+          </div>
+        )}
       </div>
     </main>
   );
