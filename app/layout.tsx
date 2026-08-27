@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { initGA, logPageView } from "@/lib/analytics";
+import { initNative } from "@/lib/capacitor";
 import { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -35,6 +36,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
           console.error("Service worker registration failed:", err)
         );
     }
+  }, []);
+
+  useEffect(() => {
+    // Инициализация нативных плагинов Capacitor (push, статус-бар, сплэш, кнопка "назад").
+    initNative();
   }, []);
 
   return (

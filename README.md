@@ -206,6 +206,60 @@ docker run -p 3000:3000 leadai
 
 ---
 
+## 📱 Мобильное приложение (Capacitor)
+
+Проект включает гибридную мобильную обёртку на **Capacitor**. Приложение загружает развёрнутый веб-сервис в нативный WebView, поэтому все серверные API-маршруты (`/api/ai`, `/api/voice` и т.д.) продолжают работать на сервере.
+
+### Как это работает
+
+- [`capacitor.config.ts`](capacitor.config.ts) настроен на гибридный режим: `server.url` указывает на развёрнутый веб-сервис.
+- Нативные плагины: push-уведомления, статус-бар, сплэш-экран, обработка кнопки «назад» на Android, состояние сети.
+- Интеграция в [`lib/capacitor.js`](lib/capacitor.js) и [`app/layout.tsx`](app/layout.tsx).
+
+### Требования
+
+- Node.js 18+
+- Для Android: Android Studio + JDK 17
+- Для iOS: macOS + Xcode
+
+### Сборка
+
+1. **Разверните веб-версию** на Vercel/Netlify и укажите URL в `capacitor.config.ts` (`server.url`).
+
+2. **Установите зависимости** (плагины Capacitor уже в `package.json`):
+
+   ```bash
+   npm install
+   ```
+
+3. **Добавьте нативные платформы** (один раз):
+
+   ```bash
+   npm run mobile:add
+   ```
+
+4. **Синхронизируйте** веб-сборку с нативными проектами:
+
+   ```bash
+   npm run mobile:sync
+   ```
+
+5. **Откройте нативный проект**:
+
+   ```bash
+   npm run mobile:android   # Android Studio
+   npm run mobile:ios       # Xcode
+   ```
+
+6. Соберите и запустите приложение из Android Studio / Xcode.
+
+### Настройка push-уведомлений
+
+- **Android**: Firebase Cloud Messaging (FCM) — добавьте `google-services.json` в `android/app/`.
+- **iOS**: Apple Push Notification Service (APNs) — настройте в Xcode и на сервере.
+
+---
+
 ## 🧪 Тестирование
 
 Проект использует сборку Next.js для проверки типов и линтинга:
