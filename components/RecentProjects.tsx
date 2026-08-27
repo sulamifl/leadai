@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslation } from "react-i18next";
 
 export const projects = [
@@ -73,9 +74,11 @@ const RecentProjects = () => {
                 height: "20rem",
               }}
             >
-              <img
+              <Image
                 src={project.img}
                 alt={t(project.titleKey)}
+                width={80}
+                height={80}
                 className="mb-4 w-20 h-20 object-cover rounded-lg"
               />
               <h3 className="text-2xl font-semibold mb-2 text-white">

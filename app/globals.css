@@ -33,16 +33,27 @@
     --ring: 240 10% 3.9%;
 
     --radius: 0.5rem;
+
+    /* App-level semantic variables for styled-components pages */
+    --app-bg: #ffffff;
+    --app-bg-alt: #f4f6f8;
+    --app-text: #1a1a2e;
+    --app-subtext: #374151;
+    --app-muted: #f9fafb;
+    --app-card: #ffffff;
+    --app-border: #e5e7eb;
+    --app-input-border: #d1d5db;
+    --app-secondary-text: #14465a;
   }
 
   .dark {
-    --background: 0 0% 100%; /* Белый цвет фона для тёмной темы */
-    --foreground: 0 0% 98%; /* Белый цвет текста для тёмной темы */
+    --background: 0 0% 7%; /* Тёмный цвет фона для тёмной темы */
+    --foreground: 0 0% 98%; /* Светлый цвет текста для тёмной темы */
 
-    --card: 0 0% 100%;
+    --card: 0 0% 9%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
+    --popover: 0 0% 9%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
@@ -63,6 +74,17 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* App-level semantic variables for styled-components pages (dark) */
+    --app-bg: #121212;
+    --app-bg-alt: #1a1a1a;
+    --app-text: #e5e7eb;
+    --app-subtext: #cbd5e1;
+    --app-muted: #1f2937;
+    --app-card: #1c1c1e;
+    --app-border: #374151;
+    --app-input-border: #4b5563;
+    --app-secondary-text: #7fb3d5;
   }
 
   * {
@@ -71,7 +93,9 @@
 
   body {
     @apply bg-background text-foreground;
-    background-color: hsl(var(--background)); /* Использование переменной --background */
+    background-color: hsl(
+      var(--background)
+    ); /* Использование переменной --background */
     color: hsl(var(--foreground)); /* Использование переменной --foreground */
   }
 

@@ -548,6 +548,7 @@ useEffect(() => {
       }, 1000);
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, currentPart, timedMode]);
 
   const shuffleArray = (array) => {

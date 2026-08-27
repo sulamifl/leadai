@@ -350,11 +350,13 @@ const SpeakingSection = ({ onNext, timedMode }) => {
     if (currentPart < parts.length && selectedQuestions.length > 0) {
       speakQuestion(selectedQuestions[currentPart][currentQuestionIndex]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPart, currentQuestionIndex, selectedQuestions]);
 
   useEffect(() => {
     const randomQuestions = getRandomQuestions();
     setSelectedQuestions(randomQuestions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -372,6 +374,7 @@ const SpeakingSection = ({ onNext, timedMode }) => {
       }, 1000);
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timedMode]);
 
   useEffect(() => {

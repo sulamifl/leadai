@@ -1,4 +1,5 @@
 import { FaLocationArrow } from "react-icons/fa6";
+import Image from "next/image";
 import MagicButton from "./MagicButton";
 import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 import { useState } from "react";
@@ -33,16 +34,24 @@ const Hero = () => {
       `}</style>
       <div className="flex justify-between items-center w-full px-4 md:px-10 absolute top-4 left-0 z-20">
         <div className="flex items-center">
-          <img src="/logo1.png" alt="Logo" className="h-12 md:h-16" />
+          <Image
+            src="/logo1.png"
+            alt="Logo"
+            width={64}
+            height={64}
+            className="h-12 md:h-16 w-auto"
+          />
         </div>
         <div className="relative">
           <button
             className="flex items-center space-x-2 text-gray-800"
             onClick={toggleDropdown}
           >
-            <img
+            <Image
               src={`/${i18n.language}.png`}
               alt="Current Language"
+              width={36}
+              height={32}
               className="h-6 w-7 md:h-8 md:w-9"
             />
             <span className="hidden md:inline">
@@ -56,9 +65,11 @@ const Hero = () => {
                   className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
                   onClick={() => closeDropdown("en")}
                 >
-                  <img
+                  <Image
                     src="/en.png"
                     alt="English"
+                    width={36}
+                    height={32}
                     className="h-6 w-7 md:h-8 md:w-9 mr-2"
                   />
                   <span className="text-black">EN</span>
@@ -67,9 +78,11 @@ const Hero = () => {
                   className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
                   onClick={() => closeDropdown("ru")}
                 >
-                  <img
+                  <Image
                     src="/ru.png"
                     alt="Russian"
+                    width={36}
+                    height={32}
                     className="h-6 w-7 md:h-8 md:w-9 mr-2"
                   />
                   <span className="text-black">RU</span>
@@ -78,9 +91,11 @@ const Hero = () => {
                   className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
                   onClick={() => closeDropdown("zh")}
                 >
-                  <img
+                  <Image
                     src="/zh.png"
                     alt="Chinese"
+                    width={36}
+                    height={32}
                     className="h-6 w-7 md:h-8 md:w-9 mr-2"
                   />
                   <span className="text-black">ZH</span>
@@ -89,9 +104,11 @@ const Hero = () => {
                   className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
                   onClick={() => closeDropdown("kk")}
                 >
-                  <img
+                  <Image
                     src="/kk.png"
                     alt="Kazakh"
+                    width={36}
+                    height={32}
                     className="h-6 w-7 md:h-8 md:w-9 mr-2"
                   />
                   <span className="text-black">KK</span>
@@ -100,9 +117,11 @@ const Hero = () => {
                   className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
                   onClick={() => closeDropdown("ar")}
                 >
-                  <img
+                  <Image
                     src="/ar.png"
                     alt="Arabic"
+                    width={36}
+                    height={32}
                     className="h-6 w-7 md:h-8 md:w-9 mr-2"
                   />
                   <span className="text-black">AR</span>

@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import styled from "styled-components";
+import { useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { getUserResults, deleteResult } from "@/lib/resultsService";
@@ -15,6 +18,11 @@ const Container = styled.div`
   margin: 0 auto;
   font-family: Arial, sans-serif;
   min-height: 100vh;
+  color: var(--app-text);
+  background: var(--app-bg);
+  @media (max-width: 640px) {
+    padding: 12px;
+  }
 `;
 
 const Title = styled.h1`
@@ -23,6 +31,12 @@ const Title = styled.h1`
   font-weight: bold;
   font-size: 2.5em;
   margin-bottom: 30px;
+  @media (max-width: 640px) {
+    font-size: 1.8em;
+  }
+  .dark & {
+    color: #e0526e;
+  }
 `;
 
 const LoadingContainer = styled.div`
@@ -34,15 +48,15 @@ const LoadingContainer = styled.div`
 
 const EmptyState = styled.div`
   text-align: center;
-  color: #555;
+  color: var(--app-subtext);
   padding: 40px;
-  background-color: #f9f9f9;
+  background-color: var(--app-muted);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const ResultCard = styled.div`
-  background-color: #f9f9f9;
+  background-color: var(--app-muted);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
@@ -58,7 +72,7 @@ const ResultHeader = styled.div`
 `;
 
 const ResultDate = styled.span`
-  color: #555;
+  color: var(--app-subtext);
   font-size: 14px;
 `;
 
@@ -76,15 +90,15 @@ const SectionScores = styled.div`
 `;
 
 const SectionScore = styled.div`
-  background-color: white;
-  border: 1px solid #ddd;
+  background-color: var(--app-card);
+  border: 1px solid var(--app-border);
   border-radius: 4px;
   padding: 8px 12px;
   font-size: 14px;
 `;
 
 const SectionName = styled.span`
-  color: #14465a;
+  color: var(--app-secondary-text);
   font-weight: bold;
   text-transform: capitalize;
 `;
@@ -156,7 +170,8 @@ const ModalOverlay = styled.div`
 `;
 
 const Modal = styled.div`
-  background-color: white;
+  background-color: var(--app-card);
+  color: var(--app-text);
   border-radius: 8px;
   padding: 30px;
   max-width: 700px;
@@ -164,28 +179,34 @@ const Modal = styled.div`
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  @media (max-width: 640px) {
+    padding: 20px;
+  }
 `;
 
 const ModalTitle = styled.h2`
   color: #800120;
   margin-bottom: 20px;
+  .dark & {
+    color: #e0526e;
+  }
 `;
 
 const ModalSection = styled.div`
   margin-bottom: 20px;
   padding: 15px;
-  background-color: #f9f9f9;
+  background-color: var(--app-muted);
   border-radius: 4px;
 `;
 
 const ModalSectionTitle = styled.h3`
-  color: #14465a;
+  color: var(--app-secondary-text);
   margin-bottom: 10px;
   text-transform: capitalize;
 `;
 
 const ModalFeedback = styled.p`
-  color: #333;
+  color: var(--app-subtext);
   line-height: 1.6;
   white-space: pre-wrap;
 `;
@@ -202,7 +223,7 @@ const CloseButton = styled(Button)`
 const AuthMessage = styled.div`
   text-align: center;
   padding: 60px 20px;
-  color: #555;
+  color: var(--app-subtext);
 `;
 
 const AuthLink = styled.a`
@@ -215,11 +236,19 @@ const AuthLink = styled.a`
   }
 `;
 
-const HistoryPage = () => {
+function HistoryPageContent() {
+  const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const lang = searchParams.get("lang") || "en";
+    i18n.changeLanguage(lang);
+  }, [searchParams]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -234,8 +263,10 @@ const HistoryPage = () => {
     try {
       const data = await getUserResults();
       setResults(data);
-    } catch (error) {
-      console.error("Error loading results:", error);
+      setError(null);
+    } catch (err) {
+      console.error("Error loading results:", err);
+      setError(err.message || "network");
     }
   };
 
@@ -246,7 +277,7 @@ const HistoryPage = () => {
   }, [user]);
 
   const formatDate = (createdAt) => {
-    if (!createdAt) return "Unknown date";
+    if (!createdAt) return t("hist_unknown_date");
     try {
       if (typeof createdAt.toDate === "function") {
         return createdAt.toDate().toLocaleString();
@@ -256,7 +287,7 @@ const HistoryPage = () => {
       }
       return new Date(createdAt).toLocaleString();
     } catch (error) {
-      return "Unknown date";
+      return t("hist_unknown_date");
     }
   };
 
@@ -269,7 +300,7 @@ const HistoryPage = () => {
       }
     } catch (error) {
       console.error("Error deleting result:", error);
-      alert("Failed to delete result. Please try again.");
+      alert(t("hist_delete_error"));
     }
   };
 
@@ -286,7 +317,7 @@ const HistoryPage = () => {
       });
     } catch (error) {
       console.error("Error exporting PDF:", error);
-      alert("Failed to export PDF. Please try again.");
+      alert(t("hist_pdf_error"));
     }
   };
 
@@ -304,14 +335,31 @@ const HistoryPage = () => {
     return (
       <Container>
         <AuthMessage>
-          <h1 style={{ color: "#800120", marginBottom: "20px" }}>Please log in</h1>
+          <h1 style={{ color: "#800120", marginBottom: "20px" }}>{t("hist_login_title")}</h1>
           <p style={{ marginBottom: "20px" }}>
-            You need to be logged in to view your IELTS test history.
+            {t("hist_login_desc")}
           </p>
           <Link href="/login" passHref>
-            <AuthLink>Go to Login</AuthLink>
+            <AuthLink>{t("hist_login_btn")}</AuthLink>
           </Link>
         </AuthMessage>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <BackButton onClick={() => (window.location.href = "/cabinet")}>
+          {t("hist_back")}
+        </BackButton>
+        <EmptyState>
+          <h2 style={{ color: "#800120", marginBottom: "15px" }}>{t("hist_error_title")}</h2>
+          <p style={{ marginBottom: "20px" }}>
+            {t("hist_error_desc")}
+          </p>
+          <Button onClick={loadResults}>{t("hist_try_again")}</Button>
+        </EmptyState>
       </Container>
     );
   }
@@ -319,14 +367,14 @@ const HistoryPage = () => {
   return (
     <Container>
       <BackButton onClick={() => (window.location.href = "/cabinet")}>
-        Back to Dashboard
+        {t("hist_back")}
       </BackButton>
-      <Title>Test History</Title>
+      <Title>{t("hist_title")}</Title>
 
       {results.length === 0 ? (
         <EmptyState>
-          <h2 style={{ color: "#800120", marginBottom: "15px" }}>No results yet</h2>
-          <p>You have not completed any IELTS tests yet. Take a test to see your results here.</p>
+          <h2 style={{ color: "#800120", marginBottom: "15px" }}>{t("hist_empty_title")}</h2>
+          <p>{t("hist_empty_desc")}</p>
         </EmptyState>
       ) : (
         results.map((result) => (
@@ -335,12 +383,12 @@ const HistoryPage = () => {
               <div>
                 <ResultDate>{formatDate(result.createdAt)}</ResultDate>
                 <div style={{ marginTop: "5px" }}>
-                  <span style={{ color: "#14465a", fontWeight: "bold", textTransform: "capitalize" }}>
+                  <span style={{ color: "var(--app-secondary-text)", fontWeight: "bold", textTransform: "capitalize" }}>
                     {result.testType}
                   </span>
                 </div>
               </div>
-              <OverallScore>Overall: {result.overallScore}/9</OverallScore>
+              <OverallScore>{t("hist_overall", { score: result.overallScore })}</OverallScore>
             </ResultHeader>
             <SectionScores>
               {sectionKeys.map((section) => {
@@ -354,9 +402,9 @@ const HistoryPage = () => {
               })}
             </SectionScores>
             <ButtonGroup>
-              <ViewButton onClick={() => setSelectedResult(result)}>View</ViewButton>
-              <ViewButton onClick={() => handleDownloadPDF(result)}>Download PDF</ViewButton>
-              <DeleteButton onClick={() => handleDelete(result.id)}>Delete</DeleteButton>
+              <ViewButton onClick={() => setSelectedResult(result)}>{t("hist_view")}</ViewButton>
+              <ViewButton onClick={() => handleDownloadPDF(result)}>{t("hist_download_pdf")}</ViewButton>
+              <DeleteButton onClick={() => handleDelete(result.id)}>{t("hist_delete")}</DeleteButton>
             </ButtonGroup>
           </ResultCard>
         ))
@@ -366,9 +414,9 @@ const HistoryPage = () => {
         <ModalOverlay onClick={() => setSelectedResult(null)}>
           <Modal onClick={(e) => e.stopPropagation()}>
             <ModalTitle>
-              {selectedResult.testType} — Overall: {selectedResult.overallScore}/9
+              {selectedResult.testType} — {t("hist_overall", { score: selectedResult.overallScore })}
             </ModalTitle>
-            <p style={{ color: "#555", marginBottom: "20px" }}>
+            <p style={{ color: "var(--app-subtext)", marginBottom: "20px" }}>
               {formatDate(selectedResult.createdAt)}
             </p>
             {sectionKeys.map((section) => {
@@ -377,7 +425,7 @@ const HistoryPage = () => {
               return (
                 <ModalSection key={section}>
                   <ModalSectionTitle>
-                    {section} — Score: {sectionData.score}/9
+                    {section} — {t("hist_score", { score: sectionData.score })}
                   </ModalSectionTitle>
                   <ModalFeedback>{sectionData.feedback}</ModalFeedback>
                 </ModalSection>
@@ -385,15 +433,21 @@ const HistoryPage = () => {
             })}
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <ViewButton onClick={() => handleDownloadPDF(selectedResult)}>
-                Download PDF
+                {t("hist_download_pdf")}
               </ViewButton>
-              <CloseButton onClick={() => setSelectedResult(null)}>Close</CloseButton>
+              <CloseButton onClick={() => setSelectedResult(null)}>{t("hist_close")}</CloseButton>
             </div>
           </Modal>
         </ModalOverlay>
       )}
     </Container>
   );
-};
+}
+
+const HistoryPage = () => (
+  <Suspense fallback={null}>
+    <HistoryPageContent />
+  </Suspense>
+);
 
 export default HistoryPage;

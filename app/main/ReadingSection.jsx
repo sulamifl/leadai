@@ -150,12 +150,14 @@ const ReadingSection = ({ onNext, testType, timedMode }) => {
 
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timedMode]);
 
   useEffect(() => {
     if (timedMode && timeLeft === 0) {
       handleSubmit();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timedMode, timeLeft]);
 
   const shuffleArray = (array) => {

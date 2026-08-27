@@ -5,6 +5,15 @@ import {
   handleRecommendations,
   handleStudyPlan,
   handlePracticeTest,
+  handleEssayFeedback,
+  handleSpeechFeedback,
+  handlePersonalizedStudyPlan,
+  handleVocabulary,
+  handleChatAssistant,
+  handleErrorAnalysis,
+  handleSpeakingTutor,
+  handleWritingTutor,
+  handleReadingListeningTutor,
 } from "@/lib/aiHandlers";
 
 /**
@@ -30,11 +39,20 @@ function jsonResponse(data, status = 200) {
 
 const handlers = {
   essay: handleEssay,
+  essayFeedback: handleEssayFeedback,
+  speechFeedback: handleSpeechFeedback,
   voice: handleVoice,
   code: handleCode,
   recommendations: handleRecommendations,
   studyPlan: handleStudyPlan,
+  personalizedStudyPlan: handlePersonalizedStudyPlan,
   practiceTest: handlePracticeTest,
+  vocabulary: handleVocabulary,
+  chatAssistant: handleChatAssistant,
+  errorAnalysis: handleErrorAnalysis,
+  speakingTutor: handleSpeakingTutor,
+  writingTutor: handleWritingTutor,
+  readingListeningTutor: handleReadingListeningTutor,
 };
 
 export async function POST(req) {

@@ -13,7 +13,7 @@ const SurveyRedirect = () => {
     if (!hasCompletedSurvey) {
       router.push("/survey");
     } else {
-      router.push("/dashboard");
+      router.push("/cabinet");
     }
   }, [router]);
 

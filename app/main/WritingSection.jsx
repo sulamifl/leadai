@@ -144,6 +144,7 @@ useEffect(() => {
   if (timedMode && timeLeft === 0) {
     handleSubmit();
   }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [timedMode, timeLeft]);
 
   const handleAnswerChange = (taskIndex, answer) => {

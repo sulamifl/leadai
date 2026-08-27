@@ -27,10 +27,26 @@ export default function RootLayout({ children }: RootLayoutProps) {
     logPageView();
   }, [pathname]);
 
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .catch((err) =>
+          console.error("Service worker registration failed:", err)
+        );
+    }
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.png" sizes="any" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#800120" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="LeadAI" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         <title>LeadAI - Your AI assistant for IELTS preparation</title>
         <meta
           name="keywords"

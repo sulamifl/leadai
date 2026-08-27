@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import Image from 'next/image';
 import { FaPaperPlane, FaRobot } from 'react-icons/fa';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+// Ленивая загрузка тяжёлого синтаксического подсветчика для ускорения начальной загрузки
+const SyntaxHighlighter = lazy(() =>
+  import('react-syntax-highlighter').then((mod) => ({ default: mod.Prism }))
+);
+const solarizedlight = lazy(() =>
+  import('react-syntax-highlighter/dist/esm/styles/prism').then((mod) => mod.solarizedlight)
+);
 
 const topics = [
   'Android Development',
@@ -234,9 +241,11 @@ export default function ProgrammingPage() {
     if (content.startsWith('```') && content.endsWith('```')) {
       const codeContent = content.slice(3, -3).trim();
       return (
-        <SyntaxHighlighter language="javascript" style={solarizedlight} className="rounded-lg shadow-md my-2">
-          {codeContent}
-        </SyntaxHighlighter>
+        <Suspense fallback={<div className="my-2 p-3 bg-gray-100 rounded-lg text-sm text-gray-500">Loading code...</div>}>
+          <SyntaxHighlighter language="javascript" style={solarizedlight} className="rounded-lg shadow-md my-2">
+            {codeContent}
+          </SyntaxHighlighter>
+        </Suspense>
       );
     }
     return content.split('\n').map((line, i) => (
@@ -247,10 +256,11 @@ export default function ProgrammingPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <div className="bg-[#800120] text-white p-4 shadow-md flex items-center">
-        <img
+        <Image
           src="/favicon.png"
           alt="Leader Avatar"
-          style={{ height: '32px', width: '32px' }}
+          width={32}
+          height={32}
           className="rounded-full"
         />
         <h1 className="text-xl font-bold ml-6" style={{ color: "#800120" }}>Leader - Your Programming Assistant</h1>
@@ -272,18 +282,20 @@ export default function ProgrammingPage() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     {message.role === 'assistant' && (
-                      <img
+                      <Image
                         src="/favicon.png"
                         alt="Leader Avatar"
-                        style={{ height: '24px', width: '24px' }}
+                        width={24}
+                        height={24}
                         className="rounded-full mr-2"
                       />
                     )}
                     {message.role === 'user' && (
-                      <img
+                      <Image
                         src="/usr.png"
                         alt="User Avatar"
-                        style={{ height: '24px', width: '24px' }}
+                        width={24}
+                        height={24}
                         className="rounded-full ml-2 mr-2"
                       />
                     )}
@@ -301,10 +313,11 @@ export default function ProgrammingPage() {
               <div className="flex justify-start">
                 <div className="bg-white text-black border border-gray-300 rounded-lg p-3 message-bubble">
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src="/favicon.png"
                       alt="Leader Avatar"
-                      style={{ height: '24px', width: '24px' }}
+                      width={24}
+                      height={24}
                       className="rounded-full mr-2"
                     />
                     <span className="typing-animation">

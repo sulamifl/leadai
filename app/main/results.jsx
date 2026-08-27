@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import PulseLoader from 'react-spinners/PulseLoader';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { fetchResults, fetchListeningExamples, fetchSpeakingExamples, fetchReadingExamples, fetchWritingExamples, fetchUniversityRecommendations } from './chatgpt';
 import { saveTestResult } from '@/lib/resultsService';
+import { recordTestActivity } from '@/lib/gamification';
 import { exportResultsToPDF } from '@/lib/pdfExport';
 import AIAssistant from './AIAssistant';
 
@@ -34,6 +36,65 @@ const ScoreChart = styled.div`
   width: 100%;
   height: 400px;
   margin-bottom: 40px;
+`;
+
+const OverallBandCard = styled.div`
+  background: linear-gradient(135deg, #800120 0%, #a00130 100%);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 30px;
+  box-shadow: 0 6px 20px rgba(128, 1, 32, 0.35);
+`;
+
+const OverallBandLabel = styled.div`
+  font-size: 1.1em;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+`;
+
+const OverallBandValue = styled.div`
+  font-size: 4.5em;
+  font-weight: bold;
+  line-height: 1;
+`;
+
+const OverallBandSub = styled.div`
+  margin-top: 10px;
+  font-size: 1em;
+  opacity: 0.95;
+`;
+
+const SectionBandGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+`;
+
+const SectionBandCard = styled.div`
+  background-color: #ffffff;
+  border: 2px solid #14465a;
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionBandName = styled.div`
+  color: #14465a;
+  font-weight: bold;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+`;
+
+const SectionBandScore = styled.div`
+  color: #800120;
+  font-size: 2.2em;
+  font-weight: bold;
 `;
 
 const Feedback = styled.div`
@@ -152,7 +213,193 @@ const UniversityLink = styled.a`
   }
 `;
 
+const ErrorAnalysisContainer = styled.div`
+  margin-top: 40px;
+  background: linear-gradient(135deg, #14465a 0%, #0d2f3d 100%);
+  border-radius: 12px;
+  padding: 24px;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(20, 70, 90, 0.3);
+`;
+
+const ErrorAnalysisHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+const ErrorAnalysisTitle = styled.h3`
+  color: #ffffff;
+  margin: 0;
+  font-weight: bold;
+`;
+
+const AnalyzeButton = styled(Button)`
+  background-color: #800120;
+  &:hover {
+    background-color: #a00130;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ErrorAnalysisSummary = styled.div`
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+`;
+
+const ErrorSection = styled.div`
+  background-color: #ffffff;
+  color: #333;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+`;
+
+const ErrorSectionTitle = styled.h4`
+  color: #14465a;
+  margin: 0 0 12px 0;
+  font-weight: bold;
+  text-transform: capitalize;
+`;
+
+const QuestionItem = styled.div`
+  border-left: 4px solid ${(props) => (props.correct ? "#16a34a" : "#800120")};
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+`;
+
+const QuestionText = styled.p`
+  margin: 0 0 6px 0;
+  font-weight: bold;
+  color: #333;
+`;
+
+const QuestionDetail = styled.p`
+  margin: 2px 0;
+  font-size: 0.95em;
+  color: #555;
+`;
+
+const QuestionExplanation = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 0.95em;
+  color: #333;
+  line-height: 1.5;
+`;
+
+const MistakeList = styled.ul`
+  margin: 10px 0;
+  padding-left: 20px;
+  color: #555;
+`;
+
+const RecommendationList = styled.ul`
+  margin: 10px 0;
+  padding-left: 20px;
+  color: #333;
+`;
+
+const OverallRecommendations = styled.div`
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+`;
+
+const OverallRecommendationsTitle = styled.h4`
+  color: #14465a;
+  margin: 0 0 8px 0;
+  font-weight: bold;
+`;
+
+const GamificationContainer = styled.div`
+  margin-top: 40px;
+  background: linear-gradient(135deg, #800120 0%, #a00130 100%);
+  border-radius: 12px;
+  padding: 24px;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(128, 1, 32, 0.35);
+`;
+
+const GamificationHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+const GamificationTitle = styled.h3`
+  color: #ffffff;
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.3rem;
+`;
+
+const XpBadge = styled.div`
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-weight: bold;
+  font-size: 1.1rem;
+`;
+
+const GamificationStats = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+`;
+
+const GamStat = styled.div`
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+`;
+
+const GamStatValue = styled.div`
+  font-size: 1.6rem;
+  font-weight: bold;
+`;
+
+const GamStatLabel = styled.div`
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-top: 4px;
+`;
+
+const AchievementBadges = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+const AchievementBadge = styled.div`
+  background-color: rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+`;
+
 const Results = ({ answers, testType }) => {
+  const { t } = useTranslation();
 
   const [result, setResult] = useState({});
   const [error, setError] = useState(null);
@@ -164,6 +411,10 @@ const Results = ({ answers, testType }) => {
   const [universityRecommendations, setUniversityRecommendations] = useState(null);
   const [resultsLoadCount, setResultsLoadCount] = useState(0);
   const [savedResultId, setSavedResultId] = useState(null);
+  const [errorAnalysis, setErrorAnalysis] = useState(null);
+  const [errorAnalysisLoading, setErrorAnalysisLoading] = useState(false);
+  const [errorAnalysisError, setErrorAnalysisError] = useState(null);
+  const [gamification, setGamification] = useState(null);
 
   useEffect(() => {
   const fetchResultsLoadCount = async () => {
@@ -184,8 +435,8 @@ const Results = ({ answers, testType }) => {
       try {
         setLoading(true);
         setError(null);
-      const sections = testType === 'full' 
-        ? ['listening', 'reading', 'speaking'] 
+      const sections = testType === 'full'
+        ? ['listening', 'reading', 'writing', 'speaking']
         : [testType];
 
       const newResults = {};
@@ -252,6 +503,19 @@ setResult({ ...newResults, overallScore });
         console.error('Error saving test result:', saveError);
       }
 
+      // Начисляем XP и обновляем геймификацию
+      try {
+        const sectionKeys = Object.keys(newResults).filter((key) => key !== 'overallScore');
+        const gamificationResult = await recordTestActivity({
+          testType,
+          overallScore,
+          sections: sectionKeys,
+        });
+        setGamification(gamificationResult);
+      } catch (gamError) {
+        console.error('Error recording gamification:', gamError);
+      }
+
       await updateResultsLoadCount();
 
       if (testType === 'full') {
@@ -267,6 +531,7 @@ setResult({ ...newResults, overallScore });
     };
 
     getResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [answers, testType]);
 
   const downloadResults = () => {
@@ -338,6 +603,102 @@ setResult({ ...newResults, overallScore });
       console.error('Error exporting PDF:', error);
       alert('Failed to export PDF. Please try again.');
     }
+  };
+
+  const handleErrorAnalysis = async () => {
+    setErrorAnalysisLoading(true);
+    setErrorAnalysisError(null);
+    setErrorAnalysis(null);
+
+    try {
+      const sections = Object.entries(result)
+        .filter(([key]) => key !== 'overallScore')
+        .map(([key, data]) => ({
+          section: key,
+          score: data.score,
+          questions: answers[key]?.questions || [],
+          answers: answers[key]?.answers || {},
+          feedback: data.feedback || '',
+        }));
+
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: 'errorAnalysis',
+          sections,
+          overallScore: result.overallScore,
+          testType,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze errors');
+      }
+
+      setErrorAnalysis(data);
+    } catch (err) {
+      console.error('Error analyzing test errors:', err);
+      setErrorAnalysisError(err.message || 'Failed to analyze errors');
+    } finally {
+      setErrorAnalysisLoading(false);
+    }
+  };
+
+  const renderErrorAnalysis = () => {
+    if (!errorAnalysis) return null;
+
+    return (
+      <ErrorAnalysisContainer>
+        <ErrorAnalysisHeader>
+          <ErrorAnalysisTitle>{t("error_analysis_title")}</ErrorAnalysisTitle>
+        </ErrorAnalysisHeader>
+        {errorAnalysis.summary && (
+          <ErrorAnalysisSummary>{errorAnalysis.summary}</ErrorAnalysisSummary>
+        )}
+        {(errorAnalysis.sections || []).map((section, idx) => (
+          <ErrorSection key={idx}>
+            <ErrorSectionTitle>
+              {section.section} {section.score != null ? `- ${section.score}/9` : ''}
+            </ErrorSectionTitle>
+            {(section.questionAnalysis || []).map((q, qIdx) => (
+              <QuestionItem key={qIdx} correct={q.isCorrect}>
+                <QuestionText>{q.question}</QuestionText>
+                {q.questionType && <QuestionDetail><strong>Type:</strong> {q.questionType}</QuestionDetail>}
+                {q.userAnswer != null && <QuestionDetail><strong>Your answer:</strong> {String(q.userAnswer)}</QuestionDetail>}
+                {q.correctAnswer != null && <QuestionDetail><strong>Correct answer:</strong> {String(q.correctAnswer)}</QuestionDetail>}
+                {q.explanation && <QuestionExplanation>{q.explanation}</QuestionExplanation>}
+              </QuestionItem>
+            ))}
+            {section.commonMistakes && section.commonMistakes.length > 0 && (
+              <>
+                <strong>Common mistakes:</strong>
+                <MistakeList>
+                  {section.commonMistakes.map((m, mIdx) => <li key={mIdx}>{m}</li>)}
+                </MistakeList>
+              </>
+            )}
+            {section.recommendations && section.recommendations.length > 0 && (
+              <>
+                <strong>Recommendations:</strong>
+                <RecommendationList>
+                  {section.recommendations.map((r, rIdx) => <li key={rIdx}>{r}</li>)}
+                </RecommendationList>
+              </>
+            )}
+          </ErrorSection>
+        ))}
+        {errorAnalysis.overallRecommendations && errorAnalysis.overallRecommendations.length > 0 && (
+          <OverallRecommendations>
+            <OverallRecommendationsTitle>{t("error_analysis_overall")}</OverallRecommendationsTitle>
+            <RecommendationList>
+              {errorAnalysis.overallRecommendations.map((r, rIdx) => <li key={rIdx}>{r}</li>)}
+            </RecommendationList>
+          </OverallRecommendations>
+        )}
+      </ErrorAnalysisContainer>
+    );
   };
 
   const roundIELTSScore = (score) => {
@@ -467,6 +828,32 @@ const parseScore = (content, section) => {
     );
   };
 
+  const renderBandSummary = () => {
+    const sectionEntries = Object.entries(result).filter(([key]) => key !== 'overallScore');
+    if (sectionEntries.length === 0) return null;
+
+    return (
+      <>
+        <OverallBandCard>
+          <OverallBandLabel>Overall Band Score</OverallBandLabel>
+          <OverallBandValue>{result.overallScore}/9</OverallBandValue>
+          <OverallBandSub>
+            Calculated from {sectionEntries.length} sections
+            {testType === 'full' ? ' (Listening, Reading, Writing, Speaking)' : ''}
+          </OverallBandSub>
+        </OverallBandCard>
+        <SectionBandGrid>
+          {sectionEntries.map(([section, data]) => (
+            <SectionBandCard key={section}>
+              <SectionBandName>{section}</SectionBandName>
+              <SectionBandScore>{data.score}/9</SectionBandScore>
+            </SectionBandCard>
+          ))}
+        </SectionBandGrid>
+      </>
+    );
+  };
+
   const renderFeedback = (section) => {
     const sectionResult = result[section];
     if (!sectionResult) return null;
@@ -545,6 +932,7 @@ const parseScore = (content, section) => {
       renderTOEFLResults()
     ) : (
       <>
+        {renderBandSummary()}
         <ScoreChart>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={Object.entries(result).filter(([key]) => key !== 'overallScore').map(([key, value]) => ({ name: key, score: value.score }))}>
@@ -565,10 +953,65 @@ const parseScore = (content, section) => {
     )}
     {testType === 'full' && renderUniversityRecommendations()}
     <AIAssistant result={result} />
+    <ErrorAnalysisContainer>
+      <ErrorAnalysisHeader>
+        <ErrorAnalysisTitle>{t("error_analysis_title")}</ErrorAnalysisTitle>
+        <AnalyzeButton onClick={handleErrorAnalysis} disabled={errorAnalysisLoading}>
+          {errorAnalysisLoading ? t("error_analysis_loading") : t("error_analysis_button")}
+        </AnalyzeButton>
+      </ErrorAnalysisHeader>
+      {errorAnalysisError && (
+        <ErrorAnalysisSummary style={{ color: '#ffcccc' }}>
+          {errorAnalysisError}
+        </ErrorAnalysisSummary>
+      )}
+      {errorAnalysisLoading && (
+        <ErrorAnalysisSummary>{t("error_analysis_loading_hint")}</ErrorAnalysisSummary>
+      )}
+      {renderErrorAnalysis()}
+    </ErrorAnalysisContainer>
+    {gamification && (
+      <GamificationContainer>
+        <GamificationHeader>
+          <GamificationTitle>{t("gam_reward_title")}</GamificationTitle>
+          <XpBadge>+{gamification.xpGained} XP</XpBadge>
+        </GamificationHeader>
+        <GamificationStats>
+          <GamStat>
+            <GamStatValue>{gamification.level}</GamStatValue>
+            <GamStatLabel>{t("gam_level")}</GamStatLabel>
+          </GamStat>
+          <GamStat>
+            <GamStatValue>{gamification.newTotalXp}</GamStatValue>
+            <GamStatLabel>{t("gam_total_xp")}</GamStatLabel>
+          </GamStat>
+          <GamStat>
+            <GamStatValue>{gamification.currentStreak}🔥</GamStatValue>
+            <GamStatLabel>{t("gam_current_streak")}</GamStatLabel>
+          </GamStat>
+          <GamStat>
+            <GamStatValue>{gamification.longestStreak}</GamStatValue>
+            <GamStatLabel>{t("gam_longest_streak")}</GamStatLabel>
+          </GamStat>
+        </GamificationStats>
+        {gamification.unlockedAchievements && gamification.unlockedAchievements.length > 0 && (
+          <div>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+              {t("gam_new_achievements")}
+            </div>
+            <AchievementBadges>
+              {gamification.unlockedAchievements.map((id) => (
+                <AchievementBadge key={id}>🏆 {t(`gam_badge_${id}`)}</AchievementBadge>
+              ))}
+            </AchievementBadges>
+          </div>
+        )}
+      </GamificationContainer>
+    )}
     <ButtonContainer>
-      <Button onClick={() => window.location.href = '/main'}>Back to Dashboard</Button>
-      <DownloadButton onClick={downloadResults}>Download Results (.txt)</DownloadButton>
-      <DownloadButton onClick={downloadPDF}>Download PDF</DownloadButton>
+      <Button onClick={() => window.location.href = '/main'}>{t("back_to_dashboard")}</Button>
+      <DownloadButton onClick={downloadResults}>{t("download_results_txt")}</DownloadButton>
+      <DownloadButton onClick={downloadPDF}>{t("download_pdf")}</DownloadButton>
     </ButtonContainer>
   </Container>
 );
