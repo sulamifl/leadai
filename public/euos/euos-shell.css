@@ -1,0 +1,146 @@
+/*
+ * EduOS Shell — единый каркас интерфейсов экосистемы.
+ * Устраняет «дробность»: один набор токенов, одна верхняя навигация,
+ * один виджет сессии, которые подключаются во все SPA (index, business,
+ * university, code, live, government, ai-tools, marketplace, platform,
+ * corp, federation).
+ *
+ * Подключается автоматически скриптом static/euos-shell.js — вручную
+ * добавлять <link> не нужно.
+ */
+:root {
+  --euos-bg: #0f1420;
+  --euos-panel: #182031;
+  --euos-panel-2: #1f2a40;
+  --euos-line: #2b3852;
+  --euos-text: #e7edf7;
+  --euos-muted: #8ea0bd;
+  --euos-accent: #4f8cff;
+  --euos-accent-2: #22c55e;
+  --euos-danger: #ef4444;
+  --euos-warn: #f59e0b;
+  --euos-radius: 12px;
+  --euos-shell-h: 46px;
+}
+
+/* --- Верхняя навигация экосистемы --- */
+.euos-shell {
+  position: sticky;
+  top: 0;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--euos-shell-h);
+  padding: 0 14px;
+  background: linear-gradient(180deg, #121a28, #0f1420);
+  border-bottom: 1px solid var(--euos-line);
+  color: var(--euos-text);
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+}
+.euos-shell * { box-sizing: border-box; }
+.euos-shell .euos-brand {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px; color: var(--euos-text);
+  text-decoration: none; white-space: nowrap;
+}
+.euos-shell .euos-brand .euos-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--euos-accent);
+  box-shadow: 0 0 10px var(--euos-accent);
+}
+.euos-shell nav.euos-links {
+  display: flex; align-items: center; gap: 2px;
+  overflow-x: auto; flex: 1 1 auto; scrollbar-width: thin;
+}
+.euos-shell nav.euos-links::-webkit-scrollbar { height: 0; }
+.euos-shell .euos-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 8px; white-space: nowrap;
+  color: var(--euos-muted); text-decoration: none; font-size: 13px;
+  border: 1px solid transparent;
+}
+.euos-shell .euos-link:hover { color: var(--euos-text); background: var(--euos-panel-2); }
+.euos-shell .euos-link.active {
+  color: #fff; background: var(--euos-panel-2); border-color: var(--euos-line);
+}
+.euos-shell .euos-link .euos-ico { font-size: 14px; }
+.euos-shell .euos-right {
+  display: flex; align-items: center; gap: 8px; margin-left: auto; white-space: nowrap;
+}
+.euos-shell .euos-raw {
+  color: var(--euos-muted); text-decoration: none; font-size: 12px;
+  border: 1px solid var(--euos-line); border-radius: 8px; padding: 5px 9px;
+}
+.euos-shell .euos-raw:hover { color: var(--euos-text); border-color: var(--euos-accent); }
+.euos-shell .euos-user {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--euos-muted);
+}
+.euos-shell .euos-who {
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+  background: var(--euos-panel-2); border: 1px solid var(--euos-line);
+  border-radius: 999px; padding: 4px 10px;
+}
+.euos-shell button.euos-btn {
+  cursor: pointer; border: 1px solid var(--euos-line); background: var(--euos-panel-2);
+  color: var(--euos-text); padding: 6px 12px; border-radius: 8px; font-size: 12px;
+}
+.euos-shell button.euos-btn:hover { border-color: var(--euos-accent); }
+.euos-shell button.euos-btn.primary {
+  background: var(--euos-accent); border-color: var(--euos-accent); color: #fff; font-weight: 600;
+}
+
+/* --- Модальное окно входа (общее для всех страниц) --- */
+.euos-modal-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(6, 10, 18, .72);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.euos-modal {
+  width: 100%; max-width: 420px;
+  background: var(--euos-panel); color: var(--euos-text);
+  border: 1px solid var(--euos-line); border-radius: var(--euos-radius);
+  padding: 22px; font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+}
+.euos-modal h3 { margin: 0 0 4px; font-size: 18px; }
+.euos-modal p.euos-sub { margin: 0 0 16px; color: var(--euos-muted); font-size: 12px; }
+.euos-modal label { display: block; font-size: 12px; color: var(--euos-muted); margin: 10px 0 4px; }
+.euos-modal input {
+  width: 100%; background: #101828; border: 1px solid var(--euos-line);
+  color: var(--euos-text); padding: 9px 11px; border-radius: 8px; font-size: 13px; font-family: inherit;
+}
+.euos-modal .euos-row { display: flex; gap: 10px; margin-top: 16px; }
+.euos-modal .euos-row > * { flex: 1; }
+.euos-modal .euos-err { color: #ffb4b4; font-size: 12px; margin-top: 10px; min-height: 16px; }
+.euos-modal .euos-hint { color: var(--euos-muted); font-size: 11px; margin-top: 12px; }
+.euos-modal button {
+  cursor: pointer; border: 1px solid var(--euos-line); background: var(--euos-panel-2);
+  color: var(--euos-text); padding: 9px 14px; border-radius: 8px; font-size: 13px;
+}
+.euos-modal button.primary { background: var(--euos-accent); border-color: var(--euos-accent); color: #fff; font-weight: 600; }
+.euos-modal button.ghost { background: transparent; }
+
+/* --- Режим внешнего продукта (Saiyan / exam-ace / LeadAI) ---
+ * Шелл один и тот же файл, но в чужом origin у него другая роль: он не
+ * «главная навигация EduOS», а «переключатель продуктов экосистемы».
+ */
+.euos-shell[data-euos-product]:not([data-euos-product="eduos"]) .euos-brand {
+  border-right: 1px solid var(--euos-line);
+  padding-right: 12px;
+}
+.euos-shell .euos-cur {
+  font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--euos-muted); margin-left: 2px;
+}
+.euos-shell .euos-sep {
+  width: 1px; height: 18px; flex: 0 0 1px;
+  background: var(--euos-line); margin: 0 8px;
+}
+.euos-shell .euos-link.euos-ext { color: var(--euos-muted); }
+.euos-shell .euos-link.euos-ext:hover { color: var(--euos-text); }
+.euos-shell .euos-link.euos-ext.active { color: #fff; }
+
+/* Небольшой отступ, чтобы залипающая шапка не перекрывала контент сторонних SPA */
+body.euos-has-shell { scroll-padding-top: calc(var(--euos-shell-h) + 8px); }

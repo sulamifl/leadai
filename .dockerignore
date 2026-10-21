@@ -37,3 +37,10 @@ next-env.d.ts
 
 # Sentry Config File
 .sentryclirc
+.env.sentry-build-plugin
+
+# в образе не нужны: репозиторий, нативные проекты и их копии веб-сборки
+.git
+/ios
+/android
+.firebase

@@ -64,6 +64,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className={inter.className}>
+        {/*
+          EduOS shell (P1-7). Конфиг — отдельный файл и всегда первым: шелл
+          читает window.EUOS_SHELL_CONFIG до авто-монтирования шапки. Оба файла
+          лежат в public/euos/ и отдаются по /euos/…, поэтому политика
+          script-src 'self' их не ломает.
+        */}
+        <script src="/euos/euos-shell-config.js" />
+        <script src="/euos/euos-shell.js" defer />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

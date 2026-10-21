@@ -14,6 +14,7 @@ import {
   handleSpeakingTutor,
   handleWritingTutor,
   handleReadingListeningTutor,
+  handleMainChat,
 } from "@/lib/aiHandlers";
 
 /**
@@ -24,6 +25,7 @@ import {
  *   - "voice"           -> анализ речи / генерация темы (бывший /api/voice)
  *   - "code"            -> обучение программированию (бывший /api/codeAI)
  *   - "recommendations" -> рекомендации университетов (бывший /api/getRecommendations)
+ *   - "mainChat"        -> оценка результатов, примеры и AI-ассистент раздела /main
  *
  * Старые роуты (/api/openai, /api/voice, /api/codeAI, /api/getRecommendations)
  * реэкспортируют соответствующие обработчики из lib/aiHandlers.js, поэтому
@@ -53,6 +55,7 @@ const handlers = {
   speakingTutor: handleSpeakingTutor,
   writingTutor: handleWritingTutor,
   readingListeningTutor: handleReadingListeningTutor,
+  mainChat: handleMainChat,
 };
 
 export async function POST(req) {
@@ -77,5 +80,15 @@ export async function POST(req) {
     );
   }
 
-  return handler(req);
+  // Тело запроса можно прочитать только один раз: выше мы уже вызвали
+  // req.json(), поэтому обработчику передаём новый Request с тем же JSON.
+  // Иначе обработчики падали с "Body is unusable: Body has already been read"
+  // и все AI-функции отвечали 500. Все обработчики читают тело через req.json().
+  return handler(
+    new Request(req.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+  );
 }

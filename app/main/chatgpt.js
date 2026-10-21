@@ -1,4 +1,36 @@
-import { chatCompletion } from "@/lib/deepseek";
+/**
+ * Клиентская обёртка над серверным AI-роутом `/api/ai`.
+ *
+ * Раньше этот файл импортировал серверный клиент `@/lib/deepseek` напрямую.
+ * Файл вызывается из клиентских компонентов (`results.jsx`, `AIAssistant.jsx`,
+ * `SpeakingSection.jsx`), поэтому в браузере `process.env.DEEPSEEK_API_KEY`
+ * не определён и все функции падали с ошибкой
+ * "DEEPSEEK_API_KEY is not defined" — оценка результатов, генерация примеров,
+ * рекомендации вузов и AI-ассистент не работали. Теперь запрос выполняется
+ * на сервере, где ключ доступен.
+ */
+async function chatCompletion(messages, options = {}) {
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      endpoint: "mainChat",
+      messages,
+      max_tokens: options.max_tokens,
+      temperature: options.temperature,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || `AI request failed with status ${response.status}`
+    );
+  }
+
+  return data.result ?? "";
+}
 
 export async function fetchResults(section, data, testType) {
   if (section === "ai_assistant") {

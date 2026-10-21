@@ -42,3 +42,10 @@ next-env.d.ts
 .env.sentry-build-plugin
 
 .env.local
+
+# Firebase CLI deploy cache
+.firebase/
+
+# Capacitor копирует сюда веб-сборку — пересоздаётся командой `npm run mobile:sync`
+/ios/App/App/public/
+/android/app/src/main/assets/public/
