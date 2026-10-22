@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import styled from "styled-components";
@@ -404,7 +405,7 @@ const ReadingListeningTutorContent = () => {
     setAnalysis(null);
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -447,7 +448,7 @@ const ReadingListeningTutorContent = () => {
     setError("");
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

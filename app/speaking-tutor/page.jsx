@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import styled from "styled-components";
@@ -370,6 +371,9 @@ const SpeakingTutorContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
+  // Экзамен берём из query (?exam=toefl): от него зависит рубрика на бэкенде
+  // (IELTS 4 критерия × 0–9, TOEFL 3 критерия × 0–4).
+  const exam = searchParams.get("exam") === "toefl" ? "toefl" : "ielts";
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [part, setPart] = useState(1);
@@ -462,7 +466,7 @@ const SpeakingTutorContent = () => {
     setError("");
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -470,6 +474,7 @@ const SpeakingTutorContent = () => {
           messages: updatedMessages,
           part,
           topic: topic || undefined,
+          exam,
           mode: "practice",
         }),
       });
@@ -496,7 +501,7 @@ const SpeakingTutorContent = () => {
     setFeedback(null);
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -504,6 +509,7 @@ const SpeakingTutorContent = () => {
           messages,
           part,
           topic: topic || undefined,
+          exam,
           mode: "feedback",
         }),
       });
@@ -644,17 +650,24 @@ const SpeakingTutorContent = () => {
           <FeedbackCard>
             <FeedbackTitle>{t("speaking_tutor_feedback_title")}</FeedbackTitle>
             <OverallBand>
-              <OverallBandValue>{feedback.overallBand ?? "—"}/9</OverallBandValue>
-              <OverallBandLabel>{t("speaking_tutor_overall_band")}</OverallBandLabel>
+              <OverallBandValue>
+                {feedback.overall ?? feedback.overallBand ?? "—"}/
+                {feedback.scaleMax ?? 9}
+              </OverallBandValue>
+              <OverallBandLabel>
+                {t("speaking_tutor_overall_band")}
+                {feedback.exam ? ` · ${String(feedback.exam).toUpperCase()}` : ""}
+              </OverallBandLabel>
             </OverallBand>
 
             {(feedback.criteria || []).map((c, idx) => (
               <CriterionCard key={idx}>
                 <CriterionHeader>
-                  <CriterionName>{c.name}</CriterionName>
-                  <CriterionBand>{c.band ?? "—"}</CriterionBand>
+                  <CriterionName>{c.name ?? c.label ?? c.id}</CriterionName>
+                  <CriterionBand>{c.score ?? c.band ?? "—"}</CriterionBand>
                 </CriterionHeader>
                 <CriterionComment>{c.comment}</CriterionComment>
+                {c.evidence && <CriterionComment>{c.evidence}</CriterionComment>}
               </CriterionCard>
             ))}
 

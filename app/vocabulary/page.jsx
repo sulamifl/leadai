@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect, Suspense } from "react";
 import styled from "styled-components";
@@ -419,7 +420,7 @@ const VocabularyPageContent = () => {
     setResult(null);
 
     try {
-      const res = await fetch("/api/ai", {
+      const res = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ endpoint: "vocabulary", word: trimmed }),

@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect, Suspense } from "react";
 import styled from "styled-components";
@@ -526,7 +527,7 @@ function StudyPlanPageContent() {
     setError("");
     setPlan(null);
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

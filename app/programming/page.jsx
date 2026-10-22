@@ -115,7 +115,7 @@ export default function ProgrammingPage() {
   const generatePlan = async (topic, duration) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/codeAI', {
+      const response = await aiFetch('/api/codeAI', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -144,7 +144,7 @@ export default function ProgrammingPage() {
   const startLearning = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/codeAI', {
+      const response = await aiFetch('/api/codeAI', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -185,7 +185,7 @@ export default function ProgrammingPage() {
       await startLearning();
     } else {
       try {
-        const response = await fetch('/api/codeAI', {
+        const response = await aiFetch('/api/codeAI', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

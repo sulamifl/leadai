@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import styled from "styled-components";
@@ -320,6 +321,8 @@ function VoicePageContent() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("feedback");
+  // Рубрика зависит от экзамена: IELTS (band 0–9) или TOEFL (0–4).
+  const exam = searchParams.get("exam") === "toefl" ? "toefl" : "ielts";
 
   useEffect(() => {
     const lang = searchParams.get("lang") || "en";
@@ -356,14 +359,16 @@ function VoicePageContent() {
       const overallScore =
         feedback.overallScore != null
           ? Number(feedback.overallScore)
-          : Number(feedback.overallBand) * 10;
+          : Number(feedback.overall ?? feedback.overallBand) * 10;
       await saveTestResult({
         testType: "speech",
         overallScore,
         sections: {
           speaking: {
             score: overallScore,
-            band: feedback.overallBand,
+            band: feedback.overall ?? feedback.overallBand,
+            exam: feedback.exam ?? exam,
+            scaleMax: feedback.scaleMax ?? 9,
             feedback: {
               criteria: feedback.criteria,
               strengths: feedback.strengths,
@@ -435,7 +440,7 @@ function VoicePageContent() {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/voice", {
+      const response = await aiFetch("/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task: "generate" }),
@@ -457,7 +462,7 @@ function VoicePageContent() {
     setError("");
     setAnalysis(null);
     try {
-      const response = await fetch("/api/voice", {
+      const response = await aiFetch("/api/voice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: speech, task: "analyze" }),
@@ -479,13 +484,14 @@ function VoicePageContent() {
     setError("");
     setFeedback(null);
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: "speechFeedback",
           speech,
           question: question || undefined,
+          exam,
         }),
       });
       const data = await response.json();
@@ -626,12 +632,14 @@ function VoicePageContent() {
         <>
           <ScoreBanner>
             <ScoreValue>
-              {feedback.overallBand != null ? `${t("band")} ${feedback.overallBand}` : "N/A"}
+              {feedback.overall != null
+                ? `${feedback.overall}/${feedback.scaleMax ?? 9}`
+                : feedback.overallBand != null
+                  ? `${t("band")} ${feedback.overallBand}`
+                  : "N/A"}
             </ScoreValue>
             <ScoreLabel>
-              {feedback.overallScore != null
-                ? `${t("overall_score")} ${feedback.overallScore}/100`
-                : t("overall_score_not_available")}
+              {feedback.exam ? String(feedback.exam).toUpperCase() : t("overall_score")}
             </ScoreLabel>
           </ScoreBanner>
 
@@ -651,8 +659,11 @@ function VoicePageContent() {
             {feedback.criteria.map((criterion, idx) => (
               <CriterionCard key={idx}>
                 <CriterionHeader>
-                  <CriterionName>{criterion.name}</CriterionName>
-                  <CriterionBand>{t("band")} {criterion.band ?? "N/A"}</CriterionBand>
+                  <CriterionName>{criterion.name ?? criterion.label ?? criterion.id}</CriterionName>
+                  <CriterionBand>
+                    {criterion.score ?? criterion.band ?? "N/A"}
+                    {feedback.scaleMax ? `/${feedback.scaleMax}` : ""}
+                  </CriterionBand>
                 </CriterionHeader>
                 <CriterionComment>{criterion.comment}</CriterionComment>
               </CriterionCard>

@@ -11,11 +11,7 @@
  */
 import Link from "next/link";
 
-import {
-  federationSettings,
-  handoffUrl,
-  readLeadaiToken,
-} from "../../lib/federation.mjs";
+import { federationSettings, readLeadaiToken } from "../../lib/federation.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -200,9 +196,4 @@ export default function FederationPage({ searchParams }) {
       </div>
     </main>
   );
-}
-
-/** Ссылка перехода для серверных вызовов (например, из другого route handler). */
-export function buildHandoff(token) {
-  return handoffUrl(token, federationSettings());
 }

@@ -16,6 +16,12 @@ import {
   handleReadingListeningTutor,
   handleMainChat,
 } from "@/lib/aiHandlers";
+import { guardAiRequest, jsonResponse } from "@/lib/apiGuard.mjs";
+
+// Проверка подписи Firebase ID-token использует node:crypto,
+// поэтому роут обязан работать в Node.js runtime (не в Edge).
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * Единый универсальный AI-роут.
@@ -26,16 +32,22 @@ import {
  *   - "code"            -> обучение программированию (бывший /api/codeAI)
  *   - "recommendations" -> рекомендации университетов (бывший /api/getRecommendations)
  *   - "mainChat"        -> оценка результатов, примеры и AI-ассистент раздела /main
- *
- * Старые роуты (/api/openai, /api/voice, /api/codeAI, /api/getRecommendations)
- * реэкспортируют соответствующие обработчики из lib/aiHandlers.js, поэтому
- * клиентский код продолжает работать без изменений.
- */
+*
+* Все входы закрыты `guardAiRequest` (lib/apiGuard.mjs): Firebase ID-token
+* в заголовке Authorization + лимиты. Старые роуты (/api/openai, /api/voice,
+* /api/codeAI, /api/getRecommendations) используют тот же страж, поэтому
+* клиентский код продолжает работать без изменений, но анонимные запросы
+* к платному API больше невозможны.
+*/
 
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" },
+/** Читает режим авторизации, чтобы отдать его в `/api/ai/health`. */
+export async function GET() {
+  const { getAuthMode } = await import("@/lib/apiAuth.mjs");
+  return jsonResponse({
+    ok: true,
+    endpoint: "/api/ai",
+    authMode: getAuthMode(),
+    endpoints: Object.keys(handlers),
   });
 }
 
@@ -59,6 +71,11 @@ const handlers = {
 };
 
 export async function POST(req) {
+  // Авторизация + лимиты до любого обращения к модели.
+  // Режим задаётся AI_AUTH_MODE: required (по умолчанию) | optional | off.
+  const guard = await guardAiRequest(req);
+  if (!guard.ok) return guard.response;
+
   let body;
   try {
     body = await req.json();

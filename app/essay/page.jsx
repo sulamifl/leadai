@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import { useState, useEffect, Suspense } from "react";
 import styled from "styled-components";
@@ -319,6 +320,8 @@ function EssayPageContent() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("feedback");
+  // Рубрика зависит от экзамена: IELTS (band 0–9) или TOEFL (0–5).
+  const exam = searchParams.get("exam") === "toefl" ? "toefl" : "ielts";
 
   useEffect(() => {
     const lang = searchParams.get("lang") || "en";
@@ -352,14 +355,16 @@ function EssayPageContent() {
       const overallScore =
         feedback.overallScore != null
           ? Number(feedback.overallScore)
-          : Number(feedback.overallBand) * 10;
+          : Number(feedback.overall ?? feedback.overallBand) * 10;
       await saveTestResult({
         testType: "essay",
         overallScore,
         sections: {
           writing: {
             score: overallScore,
-            band: feedback.overallBand,
+            band: feedback.overall ?? feedback.overallBand,
+            exam: feedback.exam ?? exam,
+            scaleMax: feedback.scaleMax ?? 9,
             feedback: {
               criteria: feedback.criteria,
               strengths: feedback.strengths,
@@ -382,7 +387,7 @@ function EssayPageContent() {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/openai", {
+      const response = await aiFetch("/api/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task: "generate" }),
@@ -405,7 +410,7 @@ function EssayPageContent() {
     setError("");
     setAnalysis(null);
     try {
-      const response = await fetch("/api/openai", {
+      const response = await aiFetch("/api/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: essay, task: "analyze" }),
@@ -433,13 +438,14 @@ function EssayPageContent() {
     setError("");
     setFeedback(null);
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: "essayFeedback",
           essay,
           taskType,
+          exam,
         }),
       });
       const data = await response.json();
@@ -540,12 +546,14 @@ function EssayPageContent() {
         <>
           <ScoreBanner>
             <ScoreValue>
-              {feedback.overallBand != null ? `${t("band")} ${feedback.overallBand}` : "N/A"}
+              {feedback.overall != null
+                ? `${feedback.overall}/${feedback.scaleMax ?? 9}`
+                : feedback.overallBand != null
+                  ? `${t("band")} ${feedback.overallBand}`
+                  : "N/A"}
             </ScoreValue>
             <ScoreLabel>
-              {feedback.overallScore != null
-                ? `${t("overall_score")} ${feedback.overallScore}/100`
-                : t("overall_score_not_available")}
+              {feedback.exam ? String(feedback.exam).toUpperCase() : t("overall_score")}
             </ScoreLabel>
           </ScoreBanner>
 
@@ -565,8 +573,11 @@ function EssayPageContent() {
             {feedback.criteria.map((criterion, idx) => (
               <CriterionCard key={idx}>
                 <CriterionHeader>
-                  <CriterionName>{criterion.name}</CriterionName>
-                  <CriterionBand>{t("band")} {criterion.band ?? "N/A"}</CriterionBand>
+                  <CriterionName>{criterion.name ?? criterion.label ?? criterion.id}</CriterionName>
+                  <CriterionBand>
+                    {criterion.score ?? criterion.band ?? "N/A"}
+                    {feedback.scaleMax ? `/${feedback.scaleMax}` : ""}
+                  </CriterionBand>
                 </CriterionHeader>
                 <CriterionComment>{criterion.comment}</CriterionComment>
               </CriterionCard>

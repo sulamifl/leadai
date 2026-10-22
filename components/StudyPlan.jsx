@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState } from "react";
 
@@ -21,7 +22,7 @@ const StudyPlan = () => {
     setPlan("");
 
     try {
-      const res = await fetch("/api/ai", {
+      const res = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

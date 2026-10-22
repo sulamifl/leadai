@@ -8,9 +8,15 @@
  * "DEEPSEEK_API_KEY is not defined" — оценка результатов, генерация примеров,
  * рекомендации вузов и AI-ассистент не работали. Теперь запрос выполняется
  * на сервере, где ключ доступен.
+ *
+ * Токен пользователя подставляет `aiFetch` (lib/aiClient.js): серверный роут
+ * `/api/ai` закрыт Firebase ID-token и лимитами.
  */
+
+import { aiFetch } from "@/lib/aiClient";
+
 async function chatCompletion(messages, options = {}) {
-  const response = await fetch("/api/ai", {
+  const response = await aiFetch("/api/ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

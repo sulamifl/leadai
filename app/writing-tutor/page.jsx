@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import styled from "styled-components";
@@ -392,9 +393,14 @@ const WritingTutorContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
+  // Экзамен берём из query (?exam=toefl). От него зависят и дефолтное задание,
+  // и рубрика, по которой бэкенд оценивает текст.
+  const exam = searchParams.get("exam") === "toefl" ? "toefl" : "ielts";
   const [essay, setEssay] = useState("");
   const [taskType, setTaskType] = useState(
-    "Task 2 (Opinion / Discussion / Problem-Solution)"
+    exam === "toefl"
+      ? "Academic Discussion (TOEFL)"
+      : "Task 2 (Opinion / Discussion / Problem-Solution)"
   );
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -434,13 +440,14 @@ const WritingTutorContent = () => {
     setError("");
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: "writingTutor",
           messages: updatedMessages,
           taskType,
+          exam,
           mode: "practice",
         }),
       });
@@ -467,13 +474,14 @@ const WritingTutorContent = () => {
     setFeedback(null);
 
     try {
-      const response = await fetch("/api/ai", {
+      const response = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           endpoint: "writingTutor",
           essay,
           taskType,
+          exam,
           mode: "feedback",
         }),
       });
@@ -600,17 +608,24 @@ const WritingTutorContent = () => {
           <FeedbackCard>
             <FeedbackTitle>{t("writing_tutor_feedback_title")}</FeedbackTitle>
             <OverallBand>
-              <OverallBandValue>{feedback.overallBand ?? "—"}/9</OverallBandValue>
-              <OverallBandLabel>{t("writing_tutor_overall_band")}</OverallBandLabel>
+              <OverallBandValue>
+                {feedback.overall ?? feedback.overallBand ?? "—"}/
+                {feedback.scaleMax ?? 9}
+              </OverallBandValue>
+              <OverallBandLabel>
+                {t("writing_tutor_overall_band")}
+                {feedback.exam ? ` · ${String(feedback.exam).toUpperCase()}` : ""}
+              </OverallBandLabel>
             </OverallBand>
 
             {(feedback.criteria || []).map((c, idx) => (
               <CriterionCard key={idx}>
                 <CriterionHeader>
-                  <CriterionName>{c.name}</CriterionName>
-                  <CriterionBand>{c.band ?? "—"}</CriterionBand>
+                  <CriterionName>{c.name ?? c.label ?? c.id}</CriterionName>
+                  <CriterionBand>{c.score ?? c.band ?? "—"}</CriterionBand>
                 </CriterionHeader>
                 <CriterionComment>{c.comment}</CriterionComment>
+                {c.evidence && <CriterionComment>{c.evidence}</CriterionComment>}
               </CriterionCard>
             ))}
 

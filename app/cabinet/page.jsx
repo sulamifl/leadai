@@ -40,6 +40,8 @@ const CabinetPage = () => {
   const inactivityTimeoutRef = useRef(null);
 
   const tools = [
+    // Хаб экзаменов: IELTS / TOEFL / SAT — реальные наборы заданий и рубрики.
+    { name: t("exams_hub"), route: "/exams" },
     { name: t("ielts_testing"), route: "/main" },
     { name: t("selecting_university"), route: "/univer" },
     { name: t("test_history"), route: "/history" },

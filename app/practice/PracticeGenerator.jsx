@@ -1,4 +1,5 @@
 "use client";
+import { aiFetch } from "@/lib/aiClient";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -294,7 +295,7 @@ const PracticeGenerator = () => {
     setGenerating(true);
 
     try {
-      const res = await fetch("/api/ai", {
+      const res = await aiFetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
